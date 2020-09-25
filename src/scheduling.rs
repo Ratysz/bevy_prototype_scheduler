@@ -11,7 +11,7 @@ use event_listener::Event;
 use parking_lot::Mutex;
 use std::{borrow::Cow, collections::HashSet, sync::Arc};
 
-pub(crate) struct SchedulerSystemContainer {
+pub struct SchedulerSystemContainer {
     /// Boxed `bevy_ecs` system.
     pub system: Arc<Mutex<Box<dyn System>>>,
     /// Used to signal the system's task to start the system.

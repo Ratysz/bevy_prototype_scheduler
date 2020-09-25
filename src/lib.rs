@@ -117,9 +117,9 @@ impl UnorderedScheduler {
             .collect();
         // Populate systems' dependants lists from cached dependencies.
         for (dependant, mut dependencies) in all_dependencies.drain(..) {
-            for dependee in dependencies.drain(..) {
+            for system in dependencies.drain(..) {
                 ids_and_containers
-                    .get_mut(&dependee)
+                    .get_mut(&system)
                     .unwrap_or_else(|| unreachable!())
                     .1
                     .dependants
@@ -137,7 +137,7 @@ impl UnorderedScheduler {
             last_archetypes_generation: ArchetypesGeneration(u64::MAX),
             system_containers: ids_and_containers
                 .drain()
-                .map(|(_, id_and_container)| (id_and_container.0, id_and_container.1))
+                .map(|(_, (id, container))| (id, container))
                 .collect(),
             queued: Vec::new(),
             running: HashSet::new(),
