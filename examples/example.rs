@@ -1,25 +1,43 @@
-use bevy::prelude::*;
-use bevy_prototype_scheduler::{NamedSystem as _, UnorderedScheduler};
+use bevy_prototype_scheduler::{Resources, Schedule, Stage, StageLabel, World};
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+struct StructLabel(usize);
+
+impl StageLabel for StructLabel {}
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+enum EnumLabel {
+    A,
+    B,
+}
+
+impl StageLabel for EnumLabel {}
+
+#[derive(Debug)]
+struct PrintyStage(&'static str);
+
+impl Stage for PrintyStage {
+    fn run(&mut self, _: &mut World, _: &mut Resources) {
+        println!("{}", self.0);
+    }
+}
 
 fn main() {
-    App::build()
-        .add_resource(bevy::tasks::ComputeTaskPool(
-            bevy::tasks::TaskPoolBuilder::new().num_threads(1).build(),
-        ))
-        .add_system(
-            UnorderedScheduler::new()
-                .add_system(one.system())
-                .depends_on(two.name())
-                .add_system(two.system())
-                .into_system(),
-        )
-        .run();
-}
-
-fn one(_: Query<(&usize, &mut f32)>) {
-    println!("Hello from system one!");
-}
-
-fn two(_: Query<&usize>) {
-    println!("Hello from system two!");
+    let mut world = World;
+    let mut resources = Resources;
+    let mut schedule = Schedule::new();
+    schedule.add(StructLabel(0), PrintyStage("I am struct label 0"));
+    schedule.add(StructLabel(1), PrintyStage("I am struct label 1"));
+    schedule.add_before(
+        &StructLabel(1),
+        EnumLabel::A,
+        PrintyStage("I am enum label A"),
+    );
+    schedule.add_after(
+        &EnumLabel::A,
+        EnumLabel::B,
+        PrintyStage("I am enum label B"),
+    );
+    schedule.run(&mut world, &mut resources);
+    println!("{:#?}", schedule);
 }
